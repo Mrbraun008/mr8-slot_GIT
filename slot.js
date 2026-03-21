@@ -34,7 +34,7 @@ const PAYOUTS         = { apple:2.0, apricot:10.0, banana:60.0, big_win:300.0 };
 const BET_MULTIPLIERS = [ 1, 2, 5, 10, 25, 50, 100];
 const BASE_BET_LINE   = 0.5;
 const LINES           = 3;
-const ITEM_H          = 96;    // має збігатися з --item-height у CSS
+const ITEM_H = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--item-height').trim()) || 96;    // має збігатися з --item-height у CSS
 const STRIP_RANDOM    = 40;    // рандомних рядків перед результатом
 
 // Тривалість кручення кожного барабана (секунди)
@@ -175,7 +175,7 @@ function spin(btn) {
     cols.forEach((col, ri) => buildStrip(col, result.rows[ri]));
 
     // Кінцева позиція: зсув вгору на всі рандомні рядки
-    const finalY = -(STRIP_RANDOM * ITEM_H);
+    const finalY = -(STRIP_RANDOM * ITEM_H());
 
     // Два rAF щоб браузер встиг намалювати початкову позицію
     // перед тим як ми вмикаємо transition
