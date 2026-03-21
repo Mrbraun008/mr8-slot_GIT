@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR8 Slots</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./slot.js" defer></script>
+</head>
+<body>
+<div id="container">
+
+    <!-- Decorative top lights -->
+    <div class="top-lights">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- Machine title -->
+    <div class="machine-title">
+        <span class="title-star">★</span>
+        MR8 SLOTS
+        <span class="title-star">★</span>
+    </div>
+
+    <!-- Credits + Win row -->
+    <div class="info-bar">
+        <div class="info-box">
+            <span class="info-label">CREDITS</span>
+            <span class="info-value" id="creditsDisplay">1000.00</span>
+        </div>
+        <div class="info-box">
+            <span class="info-label">WIN</span>
+            <span class="info-value" id="winDisplay">—</span>
+        </div>
+    </div>
+
+    <!-- Reels window — identical to original -->
+    <div class="window-border">
+        <div class="window">
+            <div class="outer-spacer"></div>
+            <div class="outer-col">
+                <div class="col"></div>
+            </div>
+            <div class="outer-spacer"></div>
+            <div class="outer-col">
+                <div class="col"></div>
+            </div>
+            <div class="outer-spacer"></div>
+            <div class="outer-col">
+                <div class="col"></div>
+            </div>
+            <div class="outer-spacer"></div>
+            <!-- Center payline indicator -->
+            <div class="payline"></div>
+        </div>
+    </div>
+
+    <!-- Bet controls + Spin button -->
+    <div class="controls-row">
+        <button class="bet-btn" id="betDown">−</button>
+        <span class="bet-display" id="betDisplay">1.50</span>
+        <button class="bet-btn" id="betUp">+</button>
+        <input type="button" onclick="spin(this)" class="start-button" value="★  SPIN  ★"/>
+    </div>
+
+    <!-- Bottom lights -->
+    <div class="bottom-lights">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+</div>
+</body>
+</html>
