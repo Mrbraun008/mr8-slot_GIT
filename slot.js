@@ -122,7 +122,7 @@ function buildStrip(colEl, resultSymbols) {
     colEl.innerHTML = html;
     colEl.style.transition = 'none';
     // початкова позиція — результат на початку, рандомні після нього
-    colEl.style.transform  = `translateY(-${3 * ITEM_H()}px)`;
+    colEl.style.transform  = `translateY(-${STRIP_RANDOM * ITEM_H()}px)`;
 }
 
 // ═══════════════════════════════════════════════════════
