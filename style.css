@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rye&display=swap');
 
 /* ─── Variables ─────────────────────────────────────── */
@@ -407,3 +406,58 @@ body::before {
 }
 
 .start-button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ─── Mobile responsive ──────────────────────────────── */
+
+/* Середні телефони (до 480px) — iPhone SE, більшість Android */
+@media (max-width: 480px) {
+    :root { --item-height: 80px; }
+
+    body { align-items: flex-start; overflow-y: auto; }
+
+    #container {
+        width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        padding: 14px 12px 20px;
+        box-shadow:
+            0 0 0 4px #1a0800,
+            0 0 0 6px var(--gold-dark),
+            inset 0 1px 0 rgba(255,200,80,0.15);
+    }
+
+    .machine-title  { font-size: 22px; letter-spacing: 4px; margin-bottom: 10px; }
+    .info-value     { font-size: 18px; }
+    .info-label     { font-size: 10px; }
+    .info-bar       { margin-bottom: 10px; gap: 8px; }
+    .icon img       { width: 54px; height: 54px; }
+    .icon           { width: 100%; }
+    .outer-spacer   { width: 7px; }
+    .controls-row   { gap: 8px; margin-top: 14px; }
+    .bet-btn        { width: 48px; height: 48px; font-size: 26px; }
+    .bet-display    { font-size: 20px; min-width: 64px; padding: 6px 8px; }
+    .start-button   { flex: 1; width: auto; height: 52px; font-size: 22px; }
+    .top-lights span,
+    .bottom-lights span { width: 11px; height: 11px; }
+}
+
+/* Зовсім маленькі (до 360px) — iPhone SE 1gen, старі Android */
+@media (max-width: 360px) {
+    :root          { --item-height: 70px; }
+    .machine-title { font-size: 18px; letter-spacing: 3px; }
+    .icon img      { width: 46px; height: 46px; }
+    .bet-btn       { width: 44px; height: 44px; }
+    .start-button  { font-size: 19px; height: 48px; }
+}
+
+/* Великі телефони і планшети (481–768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    #container { width: 95vw; max-width: 480px; }
+}
+
+/* Прибираємо hover на touch-пристроях */
+@media (hover: none) {
+    .start-button:hover:not(:disabled)::after { left: -80%; }
+    .bet-btn:hover { background: linear-gradient(160deg, #3a2000, #1a0e00); box-shadow: none; }
+}
