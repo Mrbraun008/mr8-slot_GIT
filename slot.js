@@ -111,15 +111,18 @@ function mockSpin() {
 // ═══════════════════════════════════════════════════════
 function buildStrip(colEl, resultSymbols) {
     let html = '';
-    for (let i = 0; i < STRIP_RANDOM; i++) {
-        html += iconHTML(REEL_LAYOUT[0][rng.int(64)]);
-    }
+    // результат на початку смуги
     for (const sym of resultSymbols) {
         html += iconHTML(sym);
     }
+    // рандомні іконки після результату
+    for (let i = 0; i < STRIP_RANDOM; i++) {
+        html += iconHTML(REEL_LAYOUT[0][rng.int(64)]);
+    }
     colEl.innerHTML = html;
     colEl.style.transition = 'none';
-    colEl.style.transform  = 'translateY(0)';
+    // початкова позиція — результат на початку, рандомні після нього
+    colEl.style.transform  = `translateY(-${STRIP_RANDOM * ITEM_H()}px)`;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -175,7 +178,7 @@ function spin(btn) {
     cols.forEach((col, ri) => buildStrip(col, result.rows[ri]));
 
     // Кінцева позиція: зсув вгору на всі рандомні рядки
-    const finalY = -(STRIP_RANDOM * ITEM_H());
+    const finalY = 0;
 
     // Два rAF щоб браузер встиг намалювати початкову позицію
     // перед тим як ми вмикаємо transition
