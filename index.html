@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,28 +36,35 @@
         </div>
     </div>
 
-    <!-- Reels window — identical to original -->
+    <!-- Reels window -->
     <div class="window-border">
         <div class="window">
             <div class="outer-spacer"></div>
-            <div class="outer-col">
-                <div class="col"></div>
-            </div>
+            <div class="outer-col"><div class="col"></div></div>
             <div class="outer-spacer"></div>
-            <div class="outer-col">
-                <div class="col"></div>
-            </div>
+            <div class="outer-col"><div class="col"></div></div>
             <div class="outer-spacer"></div>
-            <div class="outer-col">
-                <div class="col"></div>
-            </div>
+            <div class="outer-col"><div class="col"></div></div>
             <div class="outer-spacer"></div>
-            <!-- Center payline indicator -->
-            <div class="payline"></div>
+
+            <!-- Три payline-и (top / center / bottom) -->
+            <div class="payline payline-top"    id="payline-0"></div>
+            <div class="payline payline-center" id="payline-1"></div>
+            <div class="payline payline-bottom" id="payline-2"></div>
+
+            <!-- Canvas для частинок (big win) -->
+            <canvas id="particleCanvas"></canvas>
+
+            <!-- Оверлей виграшу поверх барабанів -->
+            <div class="win-overlay" id="winOverlay">
+                <div class="win-overlay-symbol" id="winOverlaySymbol"></div>
+                <div class="win-overlay-amount" id="winOverlayAmount"></div>
+                <div class="win-overlay-mult"   id="winOverlayMult"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Bet controls + Spin button -->
+    <!-- Bet controls + Spin -->
     <div class="controls-row">
         <button class="bet-btn" id="betDown">−</button>
         <span class="bet-display" id="betDisplay">1.50</span>

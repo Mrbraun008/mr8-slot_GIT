@@ -31,22 +31,53 @@ const REEL_LAYOUT = [
 ];
 
 const PAYOUTS         = { apple:2.0, apricot:10.0, banana:60.0, big_win:300.0 };
-const BET_MULTIPLIERS = [ 1, 2, 5, 10, 25, 50, 100];
+const BET_MULTIPLIERS = [1, 2, 5, 10, 25, 50, 100];
 const BASE_BET_LINE   = 0.5;
 const LINES           = 3;
-const ITEM_H = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--item-height').trim()) || 96;    // має збігатися з --item-height у CSS
-const STRIP_RANDOM    = 40;    // рандомних рядків перед результатом
+const ITEM_H          = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--item-height').trim()) || 96;
+const STRIP_RANDOM    = 40;
+const SPIN_DURATION   = [2.5, 3.1, 3.7];
 
-// Тривалість кручення кожного барабана (секунди)
-const SPIN_DURATION = [2.5, 3.1, 3.7];
+// Конфігурація святкування для кожного символу
+const WIN_CONFIG = {
+    apple: {
+        label:    'APPLE  2×',
+        mult:     '× 2',
+        duration: 1800,
+        shake:    null,
+        particles: false,
+    },
+    apricot: {
+        label:    'APRICOT  10×',
+        mult:     '× 10',
+        duration: 2200,
+        shake:    null,
+        particles: false,
+    },
+    banana: {
+        label:    'BANANA  60×',
+        mult:     '× 60',
+        duration: 2800,
+        shake:    'light',
+        particles: false,
+    },
+    big_win: {
+        label:    'BIG WIN  300×',
+        mult:     '× 300',
+        duration: 4000,
+        shake:    'hard',
+        particles: true,
+    },
+};
 
 // ═══════════════════════════════════════════════════════
 //  СТАН
 // ═══════════════════════════════════════════════════════
 let credits  = 1000.00;
-let betIdx   = 1;
+let betIdx   = 0;          // починаємо з мінімальної ставки 1.50
 let spinning = false;
 let cols;
+let celebrateTimer = null;
 
 // ═══════════════════════════════════════════════════════
 //  MERSENNE TWISTER
@@ -77,6 +108,80 @@ class MT {
 const rng = new MT(Date.now()&0xffffffff);
 
 // ═══════════════════════════════════════════════════════
+//  WEB AUDIO — синтезовані звуки без зовнішніх файлів
+// ═══════════════════════════════════════════════════════
+let audioCtx = null;
+
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+
+function playSound(symbol) {
+    try {
+        const ctx = getAudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const now = ctx.currentTime;
+
+        if (symbol === 'apple') {
+            // Короткий дзвіночок — одна нота
+            _tone(ctx, 1046, now,       0.4, 'sine',    0.35);
+            _tone(ctx, 1318, now + 0.1, 0.3, 'sine',    0.25);
+        }
+        else if (symbol === 'apricot') {
+            // Мелодійний акорд — три ноти
+            _tone(ctx, 523,  now,       0.6, 'sine',    0.3);
+            _tone(ctx, 659,  now + 0.1, 0.6, 'sine',    0.25);
+            _tone(ctx, 784,  now + 0.2, 0.8, 'sine',    0.3);
+            _tone(ctx, 1046, now + 0.4, 0.6, 'sine',    0.2);
+        }
+        else if (symbol === 'banana') {
+            // Урочистий фанфарний звук
+            _tone(ctx, 392,  now,       0.15,'sawtooth', 0.2);
+            _tone(ctx, 523,  now + 0.15,0.15,'sawtooth', 0.2);
+            _tone(ctx, 659,  now + 0.3, 0.15,'sawtooth', 0.2);
+            _tone(ctx, 784,  now + 0.45,0.4, 'sawtooth', 0.25);
+            _tone(ctx, 1046, now + 0.5, 0.8, 'sine',     0.3);
+            _tone(ctx, 784,  now + 0.7, 0.5, 'sine',     0.2);
+            // низький бас
+            _tone(ctx, 196,  now,       1.2, 'sine',     0.15);
+        }
+        else if (symbol === 'big_win') {
+            // Переможна мелодія з наростанням
+            const notes = [523,659,784,1046,1318,1046,784,1046,1318,1568];
+            const times = [0, 0.12, 0.24, 0.36, 0.5, 0.7, 0.85, 1.0, 1.15, 1.3];
+            notes.forEach((freq, i) => {
+                _tone(ctx, freq, now + times[i], 0.25, 'sine', 0.3 + i * 0.02);
+            });
+            // Акордовий фінал
+            _tone(ctx, 523,  now + 1.6, 1.2, 'sine',    0.3);
+            _tone(ctx, 659,  now + 1.6, 1.2, 'sine',    0.25);
+            _tone(ctx, 784,  now + 1.6, 1.2, 'sine',    0.25);
+            _tone(ctx, 1046, now + 1.6, 1.2, 'sine',    0.3);
+            // Бас
+            _tone(ctx, 130,  now,       3.0, 'sine',    0.2);
+            _tone(ctx, 196,  now + 1.5, 1.5, 'sine',    0.2);
+        }
+    } catch(e) {
+        // Web Audio недоступний — ігноруємо
+    }
+}
+
+function _tone(ctx, freq, start, dur, type, vol) {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(vol, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    osc.start(start);
+    osc.stop(start + dur + 0.05);
+}
+
+// ═══════════════════════════════════════════════════════
 //  ЗАГЛУШКА БЕКЕНДУ
 // ═══════════════════════════════════════════════════════
 function mockSpin() {
@@ -89,39 +194,37 @@ function mockSpin() {
     const betPerLine = BASE_BET_LINE * BET_MULTIPLIERS[betIdx];
     let totalWin = 0;
     const winLines = [];
+    const winSymbols = [];
+
     for (let line = 0; line < 3; line++) {
         const s0=rows[0][line], s1=rows[1][line], s2=rows[2][line];
         if (s0===s1 && s1===s2) {
             totalWin += betPerLine * PAYOUTS[s0];
             winLines.push(line);
+            winSymbols.push(s0);
         }
     }
-    return { rows, totalWin, winLines };
+
+    // Визначаємо найцінніший символ виграшу
+    const symbolRank = { apple:1, apricot:2, banana:3, big_win:4 };
+    const topSymbol = winSymbols.sort((a,b) => symbolRank[b] - symbolRank[a])[0] || null;
+
+    return { rows, totalWin, winLines, topSymbol };
 }
 
 // ═══════════════════════════════════════════════════════
 //  ПОБУДОВА СМУГИ
-//
-//  Структура смуги:
-//  [ STRIP_RANDOM рандомних іконок ] [ 3 іконки результату ]
-//
-//  Початок: translateY(0)       → бачимо перші 3 рандомні
-//  Кінець:  translateY(finalY)  → бачимо рівно 3 результати
-//  Підміни немає — барабан просто їде до результату
 // ═══════════════════════════════════════════════════════
 function buildStrip(colEl, resultSymbols) {
     let html = '';
-    // результат на початку смуги
     for (const sym of resultSymbols) {
         html += iconHTML(sym);
     }
-    // рандомні іконки після результату
     for (let i = 0; i < STRIP_RANDOM; i++) {
         html += iconHTML(REEL_LAYOUT[0][rng.int(64)]);
     }
     colEl.innerHTML = html;
     colEl.style.transition = 'none';
-    // початкова позиція — результат на початку, рандомні після нього
     colEl.style.transform  = `translateY(-${STRIP_RANDOM * ITEM_H()}px)`;
 }
 
@@ -151,7 +254,19 @@ window.addEventListener('DOMContentLoaded', () => {
             if (!btn.disabled) spin(btn);
         }
     });
+
+    // Розмір canvas під вікно барабанів
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 });
+
+function resizeCanvas() {
+    const win = document.querySelector('.window');
+    const canvas = document.getElementById('particleCanvas');
+    if (!win || !canvas) return;
+    canvas.width  = win.offsetWidth;
+    canvas.height = win.offsetHeight;
+}
 
 // ═══════════════════════════════════════════════════════
 //  SPIN
@@ -174,14 +289,9 @@ function spin(btn) {
 
     const result = mockSpin();
 
-    // Будуємо смуги — результат вже в кінці, підміни не буде
     cols.forEach((col, ri) => buildStrip(col, result.rows[ri]));
 
-    // Кінцева позиція: зсув вгору на всі рандомні рядки
     const finalY = 0;
-
-    // Два rAF щоб браузер встиг намалювати початкову позицію
-    // перед тим як ми вмикаємо transition
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             cols.forEach((col, ri) => {
@@ -191,7 +301,6 @@ function spin(btn) {
         });
     });
 
-    // Після зупинки останнього барабана
     const lastMs = SPIN_DURATION[SPIN_DURATION.length - 1] * 1000;
     setTimeout(() => {
         spinning = false;
@@ -206,6 +315,182 @@ function spin(btn) {
 }
 
 // ═══════════════════════════════════════════════════════
+//  ПОКАЗ ВИГРАШУ
+// ═══════════════════════════════════════════════════════
+function showWin(result) {
+    // Зупиняємо попереднє святкування якщо є
+    if (celebrateTimer) { clearTimeout(celebrateTimer); celebrateTimer = null; }
+
+    const cfg = WIN_CONFIG[result.topSymbol];
+    if (!cfg) return;
+
+    // Підсвічуємо виграшні лінії
+    result.winLines.forEach(line => {
+        const pl = document.getElementById(`payline-${line}`);
+        if (pl) {
+            pl.classList.add('active', `win-${result.topSymbol}`);
+        }
+    });
+
+    // Маленький дисплей win
+    const winEl = document.getElementById('winDisplay');
+    winEl.textContent = result.totalWin.toFixed(2);
+    winEl.classList.remove('flash');
+    void winEl.offsetWidth;
+    winEl.classList.add('flash');
+
+    // Оверлей з великою сумою
+    showWinOverlay(result.topSymbol, result.totalWin, cfg);
+
+    // Shake
+    if (cfg.shake) {
+        const container = document.getElementById('container');
+        container.classList.remove('shake-light', 'shake-hard');
+        void container.offsetWidth;
+        container.classList.add(`shake-${cfg.shake}`);
+        setTimeout(() => container.classList.remove('shake-light', 'shake-hard'), 600);
+    }
+
+    // Частинки для big_win
+    if (cfg.particles) startParticles(cfg.duration);
+
+    // Звук
+    playSound(result.topSymbol);
+
+    // Очищуємо після закінчення
+    celebrateTimer = setTimeout(() => clearWin(), cfg.duration);
+}
+
+// ─── Оверлей з анімацією лічильника ─────────────────
+function showWinOverlay(symbol, amount, cfg) {
+    const overlay = document.getElementById('winOverlay');
+    const symEl   = document.getElementById('winOverlaySymbol');
+    const amtEl   = document.getElementById('winOverlayAmount');
+    const mulEl   = document.getElementById('winOverlayMult');
+
+    // Прибираємо старі класи символу
+    overlay.className = 'win-overlay';
+    overlay.classList.add(`win-${symbol}`);
+
+    symEl.textContent = cfg.label;
+    mulEl.textContent = cfg.mult;
+    amtEl.textContent = '0.00';
+
+    overlay.classList.add('visible');
+
+    // Лічильник від 0 до суми (для banana і big_win)
+    const useCounter = (symbol === 'banana' || symbol === 'big_win');
+    if (useCounter) {
+        const counterDur = Math.min(cfg.duration * 0.5, 1500);
+        animateCounter(amtEl, 0, amount, counterDur);
+    } else {
+        amtEl.textContent = amount.toFixed(2);
+    }
+}
+
+function animateCounter(el, from, to, duration) {
+    const start = performance.now();
+    function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        // easeOut
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = (from + (to - from) * eased).toFixed(2);
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+// ═══════════════════════════════════════════════════════
+//  ЧАСТИНКИ (Canvas) для big_win
+// ═══════════════════════════════════════════════════════
+let particleAnim = null;
+
+function startParticles(duration) {
+    const canvas = document.getElementById('particleCanvas');
+    const ctx    = canvas.getContext('2d');
+    canvas.classList.add('active');
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const colors = ['#f5c842','#ff6b6b','#4caf50','#2196f3','#ff9800','#fff'];
+
+    // Генеруємо частинки
+    const particles = Array.from({length: 80}, () => ({
+        x:  Math.random() * W,
+        y:  Math.random() * H * 0.3 - H * 0.1,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 2 + 1,
+        size: Math.random() * 6 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.15,
+        life: 1,
+        decay: Math.random() * 0.008 + 0.004,
+    }));
+
+    const startTime = performance.now();
+
+    function draw(now) {
+        const elapsed = now - startTime;
+        ctx.clearRect(0, 0, W, H);
+
+        particles.forEach(p => {
+            p.x   += p.vx;
+            p.y   += p.vy;
+            p.vy  += 0.05; // гравітація
+            p.rot += p.rotV;
+            p.life -= p.decay;
+            if (p.life <= 0) return;
+
+            ctx.save();
+            ctx.globalAlpha = p.life;
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+            ctx.restore();
+        });
+
+        if (elapsed < duration - 300) {
+            particleAnim = requestAnimationFrame(draw);
+        } else {
+            ctx.clearRect(0, 0, W, H);
+            canvas.classList.remove('active');
+        }
+    }
+
+    if (particleAnim) cancelAnimationFrame(particleAnim);
+    particleAnim = requestAnimationFrame(draw);
+}
+
+// ═══════════════════════════════════════════════════════
+//  ОЧИЩЕННЯ
+// ═══════════════════════════════════════════════════════
+function clearWin() {
+    // Paylines
+    for (let i = 0; i < 3; i++) {
+        const pl = document.getElementById(`payline-${i}`);
+        if (pl) pl.className = 'payline ' + ['payline-top','payline-center','payline-bottom'][i];
+    }
+
+    // Win display
+    document.getElementById('winDisplay').textContent = '—';
+
+    // Оверлей
+    const overlay = document.getElementById('winOverlay');
+    overlay.classList.remove('visible');
+
+    // Частинки
+    if (particleAnim) { cancelAnimationFrame(particleAnim); particleAnim = null; }
+    const canvas = document.getElementById('particleCanvas');
+    if (canvas) {
+        canvas.classList.remove('active');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+// ═══════════════════════════════════════════════════════
 //  UI
 // ═══════════════════════════════════════════════════════
 function updateUI() {
@@ -214,22 +499,7 @@ function updateUI() {
     document.getElementById('betDisplay').textContent     = totalBet.toFixed(2);
 }
 
-function showWin(result) {
-    const winEl = document.getElementById('winDisplay');
-    winEl.textContent = result.totalWin.toFixed(2);
-    winEl.classList.remove('flash');
-    void winEl.offsetWidth;
-    winEl.classList.add('flash');
-    if (result.winLines.includes(1)) {
-        document.querySelector('.payline').classList.add('win');
-    }
-}
-
-function clearWin() {
-    document.getElementById('winDisplay').textContent = '—';
-    document.querySelector('.payline').classList.remove('win');
-}
-
+// ─── Helpers ─────────────────────────────────────────
 function iconHTML(sym) {
     return `<div class="icon"><img src="assets/images/${sym}.png" alt="${sym}"></div>`;
 }

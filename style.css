@@ -1,10 +1,10 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rye&display=swap');
 
 /* ─── Variables ─────────────────────────────────────── */
 :root {
     --item-height: 96px;
     --reel-cols: 3;
-
     --gold:        #f5c842;
     --gold-light:  #fff3a0;
     --gold-dark:   #b8860b;
@@ -32,7 +32,6 @@ body {
     overflow: hidden;
 }
 
-/* subtle noise texture overlay */
 body::before {
     content: '';
     position: fixed;
@@ -52,7 +51,6 @@ body::before {
     border-radius: 18px;
     padding: 22px 26px 26px;
     width: 430px;
-
     box-shadow:
         0 0 0 6px #1a0800,
         0 0 0 8px var(--gold-dark),
@@ -60,21 +58,37 @@ body::before {
         inset 0 1px 0 rgba(255,200,80,0.15);
 }
 
-/* wood grain lines */
 #container::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 16px;
     background-image: repeating-linear-gradient(
-        92deg,
-        transparent 0px,
-        transparent 18px,
-        rgba(0,0,0,0.06) 18px,
-        rgba(0,0,0,0.06) 19px
+        92deg, transparent 0px, transparent 18px,
+        rgba(0,0,0,0.06) 18px, rgba(0,0,0,0.06) 19px
     );
     pointer-events: none;
 }
+
+/* ─── Shake анімація для великих виграшів ────────────── */
+@keyframes shakeLight {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-3px); }
+    40%      { transform: translateX(3px); }
+    60%      { transform: translateX(-2px); }
+    80%      { transform: translateX(2px); }
+}
+@keyframes shakeHard {
+    0%,100% { transform: translateX(0) translateY(0); }
+    15%      { transform: translateX(-5px) translateY(-2px); }
+    30%      { transform: translateX(5px) translateY(2px); }
+    45%      { transform: translateX(-4px) translateY(-1px); }
+    60%      { transform: translateX(4px) translateY(1px); }
+    75%      { transform: translateX(-3px) translateY(-1px); }
+    90%      { transform: translateX(3px) translateY(1px); }
+}
+#container.shake-light { animation: shakeLight 0.4s ease; }
+#container.shake-hard  { animation: shakeHard  0.5s ease; }
 
 /* ─── Decorative lights ──────────────────────────────── */
 .top-lights, .bottom-lights {
@@ -86,14 +100,12 @@ body::before {
 .bottom-lights { margin-bottom: 0; margin-top: 12px; }
 
 .top-lights span, .bottom-lights span {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     border-radius: 50%;
     background: var(--gold);
     box-shadow: 0 0 6px 2px var(--gold), 0 0 12px 4px rgba(245,200,66,0.4);
     animation: bulbFlicker 1.8s ease-in-out infinite;
 }
-
 .top-lights span:nth-child(2),  .bottom-lights span:nth-child(2)  { animation-delay: 0.18s; }
 .top-lights span:nth-child(3),  .bottom-lights span:nth-child(3)  { animation-delay: 0.36s; }
 .top-lights span:nth-child(4),  .bottom-lights span:nth-child(4)  { animation-delay: 0.54s; }
@@ -105,9 +117,9 @@ body::before {
 .top-lights span:nth-child(10), .bottom-lights span:nth-child(10) { animation-delay: 1.62s; }
 
 @keyframes bulbFlicker {
-    0%, 90%, 100% { opacity: 1; }
-    92%            { opacity: 0.3; }
-    96%            { opacity: 0.8; }
+    0%,90%,100% { opacity: 1; }
+    92%          { opacity: 0.3; }
+    96%          { opacity: 0.8; }
 }
 
 /* ─── Title ──────────────────────────────────────────── */
@@ -121,20 +133,10 @@ body::before {
     margin-bottom: 14px;
     padding: 0 4px;
 }
+.title-star { font-size: 18px; vertical-align: middle; margin: 0 6px; color: var(--gold-light); }
 
-.title-star {
-    font-size: 18px;
-    vertical-align: middle;
-    margin: 0 6px;
-    color: var(--gold-light);
-}
-
-/* ─── Info bar (credits + win) ───────────────────────── */
-.info-bar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-}
+/* ─── Info bar ───────────────────────────────────────── */
+.info-bar { display: flex; gap: 10px; margin-bottom: 12px; }
 
 .info-box {
     flex: 1;
@@ -148,42 +150,21 @@ body::before {
     gap: 1px;
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
 }
+.info-label { font-family: 'Bebas Neue', serif; font-size: 11px; letter-spacing: 3px; color: var(--gold-dark); }
+.info-value { font-family: 'Bebas Neue', serif; font-size: 22px; letter-spacing: 2px; color: var(--gold); text-shadow: 0 0 10px rgba(245,200,66,0.4); min-width: 80px; text-align: center; }
 
-.info-label {
-    font-family: 'Bebas Neue', serif;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--gold-dark);
-}
-
-.info-value {
-    font-family: 'Bebas Neue', serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--gold);
-    text-shadow: 0 0 10px rgba(245,200,66,0.4);
-    min-width: 80px;
-    text-align: center;
-}
-
-.info-value.flash {
-    animation: creditFlash 0.35s ease 4;
-}
-
+.info-value.flash { animation: creditFlash 0.35s ease 4; }
 @keyframes creditFlash {
-    0%, 100% { color: var(--gold);  text-shadow: 0 0 10px rgba(245,200,66,0.4); }
-    50%       { color: #fff;        text-shadow: 0 0 20px rgba(255,255,255,0.9); }
+    0%,100% { color: var(--gold); text-shadow: 0 0 10px rgba(245,200,66,0.4); }
+    50%      { color: #fff;       text-shadow: 0 0 20px rgba(255,255,255,0.9); }
 }
 
-/* ─── Window border (golden frame) ──────────────────── */
+/* ─── Window border ──────────────────────────────────── */
 .window-border {
     padding: 6px;
     background: linear-gradient(170deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dark) 80%, var(--gold) 100%);
     border-radius: 6px;
-    box-shadow:
-        inset 0 2px 4px rgba(255,255,255,0.5),
-        inset 0 -2px 4px rgba(0,0,0,0.3),
-        0 4px 12px rgba(0,0,0,0.6);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.6);
 }
 
 /* ─── Viewport window ────────────────────────────────── */
@@ -197,236 +178,224 @@ body::before {
     border-radius: 2px;
 }
 
-/* Top/bottom fade vignette */
 .window::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(to bottom, rgba(10,2,20,0.7) 0%, transparent 22%, transparent 78%, rgba(10,2,20,0.7) 100%);
+    background: linear-gradient(to bottom, rgba(10,2,20,0.7) 0%, transparent 22%, transparent 78%, rgba(10,2,20,0.7) 100%);
     z-index: 20;
     pointer-events: none;
 }
 
-/* ─── Payline ────────────────────────────────────────── */
+/* ─── Particle canvas ────────────────────────────────── */
+#particleCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#particleCanvas.active { opacity: 1; }
+
+/* ─── Win overlay ────────────────────────────────────── */
+.win-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.25s, transform 0.25s;
+}
+.win-overlay.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.win-overlay-symbol {
+    font-size: 13px;
+    letter-spacing: 3px;
+    font-family: 'Bebas Neue', serif;
+    color: rgba(255,255,255,0.7);
+}
+.win-overlay-amount {
+    font-family: 'Bebas Neue', serif;
+    font-size: 52px;
+    line-height: 1;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px currentColor;
+}
+.win-overlay-mult {
+    font-family: 'Bebas Neue', serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    opacity: 0.85;
+}
+
+/* Кольори для кожного символу */
+.win-overlay.win-apple   .win-overlay-amount { color: #6ddf6d; }
+.win-overlay.win-apple   .win-overlay-mult   { color: #4caf50; }
+.win-overlay.win-apricot .win-overlay-amount { color: #ffb347; }
+.win-overlay.win-apricot .win-overlay-mult   { color: #ff9800; }
+.win-overlay.win-banana  .win-overlay-amount { color: #ffe44d; }
+.win-overlay.win-banana  .win-overlay-mult   { color: #ffc107; }
+.win-overlay.win-big_win .win-overlay-amount { color: #ff6b6b; text-shadow: 0 0 30px #ff0000, 0 0 60px rgba(255,100,0,0.5); }
+.win-overlay.win-big_win .win-overlay-mult   { color: var(--gold); }
+
+/* ─── Paylines ───────────────────────────────────────── */
 .payline {
     position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
+    left: 0; right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent 0%, var(--gold) 15%, var(--gold) 85%, transparent 100%);
-    opacity: 0.5;
+    opacity: 0;               /* прихована за замовчуванням */
     z-index: 25;
     pointer-events: none;
-    transition: opacity 0.3s, box-shadow 0.3s;
+    transition: opacity 0.3s;
 }
+.payline-top    { top: calc(var(--item-height) * 0.5); }
+.payline-center { top: calc(var(--item-height) * 1.5); }
+.payline-bottom { top: calc(var(--item-height) * 2.5); }
 
-.payline.win {
+/* Базовий win стан */
+.payline.active {
     opacity: 1;
-    box-shadow: 0 0 8px 2px rgba(245,200,66,0.7);
-    animation: paylineWin 0.5s ease infinite alternate;
+    background: linear-gradient(90deg, transparent 0%, currentColor 15%, currentColor 85%, transparent 100%);
 }
 
-@keyframes paylineWin {
-    from { opacity: 0.8; }
-    to   { opacity: 1;   box-shadow: 0 0 16px 4px rgba(245,200,66,0.9); }
+/* apple — зелений, повільне пульсування 0.8s */
+.payline.win-apple {
+    color: #4caf50;
+    box-shadow: 0 0 8px 2px #4caf50;
+    animation: paylinePulse 0.8s ease-in-out infinite alternate;
+}
+/* apricot — помаранчевий, помірне 0.5s */
+.payline.win-apricot {
+    color: #ff9800;
+    box-shadow: 0 0 8px 2px #ff9800;
+    animation: paylinePulse 0.5s ease-in-out infinite alternate;
+}
+/* banana — золотий, швидке 0.25s */
+.payline.win-banana {
+    color: #ffc107;
+    box-shadow: 0 0 10px 3px #ffc107;
+    animation: paylinePulse 0.25s ease-in-out infinite alternate;
+}
+/* big_win — райдужний, спалахи */
+.payline.win-big_win {
+    animation: paylineRainbow 0.3s linear infinite;
 }
 
-/* ─── Spacers between reels ──────────────────────────── */
+@keyframes paylinePulse {
+    from { opacity: 0.5; box-shadow: 0 0 4px 1px currentColor; }
+    to   { opacity: 1;   box-shadow: 0 0 16px 4px currentColor; }
+}
+@keyframes paylineRainbow {
+    0%   { color: #ff4444; box-shadow: 0 0 12px 3px #ff4444; opacity: 1; }
+    20%  { color: #ff9800; box-shadow: 0 0 12px 3px #ff9800; }
+    40%  { color: #f5c842; box-shadow: 0 0 12px 3px #f5c842; }
+    60%  { color: #4caf50; box-shadow: 0 0 12px 3px #4caf50; }
+    80%  { color: #2196f3; box-shadow: 0 0 12px 3px #2196f3; }
+    100% { color: #ff4444; box-shadow: 0 0 12px 3px #ff4444; }
+}
+
+/* ─── Spacers ────────────────────────────────────────── */
 .outer-spacer {
-    width: 10px;
-    flex-shrink: 0;
+    width: 10px; flex-shrink: 0;
     background: linear-gradient(to bottom, #5c2a0e, #3b1a08, #5c2a0e);
     border-right: 1px solid rgba(245,200,66,0.15);
     border-left:  1px solid rgba(245,200,66,0.15);
 }
 
-/* ─── Reel column wrapper ────────────────────────────── */
+/* ─── Reel column ────────────────────────────────────── */
 .outer-col {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
+    flex: 1; overflow: hidden; position: relative;
     background: linear-gradient(180deg, var(--reel-stripe1), var(--reel-stripe2) 50%, var(--reel-stripe1));
 }
 
 /* ─── Scrolling strip ────────────────────────────────── */
-.col {
-    padding: 0 8px;
-    will-change: transform;
-    transform: translateY(calc(-100% + var(--item-height) * 3));
-}
+.col { padding: 0 8px; will-change: transform; transform: translateY(calc(-100% + var(--item-height) * 3)); }
 
-/* ─── Individual icon slot ───────────────────────────── */
-.icon {
-    width: 80px;
-    height: var(--item-height);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
+/* ─── Icon ───────────────────────────────────────────── */
+.icon { width: 80px; height: var(--item-height); display: flex; align-items: center; justify-content: center; position: relative; }
 
 .icon img {
-    width: 68px;
-    height: 68px;
-    object-fit: contain;
-    position: relative;
-    z-index: 3;
+    width: 68px; height: 68px; object-fit: contain;
+    position: relative; z-index: 3;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
     transition: filter 0.2s;
 }
 
-/* dark radial glow behind each icon */
 .icon::after {
     content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 1px; height: 1px;
-    background: white;
+    position: absolute; top: 50%; left: 50%;
+    width: 1px; height: 1px; background: white;
     box-shadow: 0 0 30px 24px rgba(8,0,20,0.75);
-    z-index: 2;
-    border-radius: 50%;
+    z-index: 2; border-radius: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
 
-/* ─── Spin animation ─────────────────────────────────── */
-#container.spinning .col {
-    animation-name: scroll, motionBlur;
-    animation-iteration-count: 1;
-    animation-timing-function: cubic-bezier(0.12, 0.8, 0.3, 1.0);
-}
-
-#container.spinning .outer-col:nth-child(2)  .col { animation-delay: 0.00s; }
-#container.spinning .outer-col:nth-child(4)  .col { animation-delay: 0.05s; }
-#container.spinning .outer-col:nth-child(6)  .col { animation-delay: 0.10s; }
-
-@keyframes scroll {
-    from { transform: translateY(calc(-100% + var(--item-height) * 3)); }
-    to   { transform: translateY(0); }
-}
-
-@keyframes motionBlur {
-    0%   { filter: blur(0px); }
-    8%   { filter: blur(3px); }
-    85%  { filter: blur(2px); }
-    100% { filter: blur(0px); }
-}
-
-/* ─── Controls row (bet + spin) ──────────────────────── */
-.controls-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 18px;
-}
+/* ─── Controls ───────────────────────────────────────── */
+.controls-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; }
 
 .bet-btn {
-    width: 38px;
-    height: 38px;
+    width: 38px; height: 38px;
     background: linear-gradient(160deg, #3a2000, #1a0e00);
-    border: 1px solid var(--gold-dark);
-    border-radius: 6px;
-    color: var(--gold);
-    font-family: 'Bebas Neue', serif;
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
+    border: 1px solid var(--gold-dark); border-radius: 6px;
+    color: var(--gold); font-family: 'Bebas Neue', serif;
+    font-size: 24px; line-height: 1; cursor: pointer;
     transition: background 0.1s, box-shadow 0.1s;
     box-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
-
 .bet-btn:hover  { background: linear-gradient(160deg, #5a3500, #2a1800); box-shadow: 0 0 8px rgba(245,200,66,0.3); }
 .bet-btn:active { transform: translateY(1px); }
 
 .bet-display {
-    font-family: 'Bebas Neue', serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--gold);
-    min-width: 56px;
-    text-align: center;
+    font-family: 'Bebas Neue', serif; font-size: 22px; letter-spacing: 2px;
+    color: var(--gold); min-width: 56px; text-align: center;
     text-shadow: 0 0 8px rgba(245,200,66,0.4);
-    background: #0d0310;
-    border: 1px solid var(--gold-dark);
-    border-radius: 6px;
-    padding: 4px 8px;
+    background: #0d0310; border: 1px solid var(--gold-dark);
+    border-radius: 6px; padding: 4px 8px;
 }
 
 /* ─── Spin button ────────────────────────────────────── */
 .start-button {
-    display: block;
-    width: 180px;
-    height: 54px;
+    display: block; width: 180px; height: 54px;
     background: linear-gradient(160deg, #ffdf5e 0%, var(--gold) 40%, var(--gold-dark) 100%);
-    border: none;
-    border-radius: 8px;
-    color: #1a0800;
-    font-family: 'Bebas Neue', serif;
-    font-size: 24px;
-    letter-spacing: 5px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    box-shadow:
-        0 4px 0 #7a5500,
-        0 6px 14px rgba(0,0,0,0.6),
-        inset 0 1px 0 rgba(255,255,255,0.5);
+    border: none; border-radius: 8px; color: #1a0800;
+    font-family: 'Bebas Neue', serif; font-size: 24px; letter-spacing: 5px;
+    cursor: pointer; position: relative; overflow: hidden;
+    box-shadow: 0 4px 0 #7a5500, 0 6px 14px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.5);
     transition: transform 0.08s, box-shadow 0.08s;
 }
-
 .start-button::after {
-    content: '';
-    position: absolute;
-    top: 0; left: -80%;
+    content: ''; position: absolute; top: 0; left: -80%;
     width: 60%; height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    transform: skewX(-15deg);
-    transition: left 0.4s ease;
+    transform: skewX(-15deg); transition: left 0.4s ease;
 }
-
 .start-button:hover:not(:disabled)::after { left: 130%; }
-
-.start-button:hover:not(:disabled) {
-    box-shadow:
-        0 4px 0 #7a5500,
-        0 8px 20px rgba(245,200,66,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.5);
-}
-
-.start-button:active:not(:disabled) {
-    transform: translateY(3px);
-    box-shadow:
-        0 1px 0 #7a5500,
-        0 2px 6px rgba(0,0,0,0.5),
-        inset 0 1px 0 rgba(255,255,255,0.5);
-}
-
+.start-button:hover:not(:disabled) { box-shadow: 0 4px 0 #7a5500, 0 8px 20px rgba(245,200,66,0.4), inset 0 1px 0 rgba(255,255,255,0.5); }
+.start-button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #7a5500, 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.5); }
 .start-button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* ─── Mobile responsive ──────────────────────────────── */
-
-/* Середні телефони (до 480px) — iPhone SE, більшість Android */
 @media (max-width: 480px) {
     :root { --item-height: 80px; }
-
-    body { align-items: flex-start; overflow-y: auto; }
-
+    body  { align-items: flex-start; overflow-y: auto; }
     #container {
-        width: 100%;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
+        width: 100%; border-radius: 0; border-left: none; border-right: none;
         padding: 14px 12px 20px;
-        box-shadow:
-            0 0 0 4px #1a0800,
-            0 0 0 6px var(--gold-dark),
-            inset 0 1px 0 rgba(255,200,80,0.15);
+        box-shadow: 0 0 0 4px #1a0800, 0 0 0 6px var(--gold-dark), inset 0 1px 0 rgba(255,200,80,0.15);
     }
-
     .machine-title  { font-size: 22px; letter-spacing: 4px; margin-bottom: 10px; }
     .info-value     { font-size: 18px; }
     .info-label     { font-size: 10px; }
@@ -436,27 +405,25 @@ body::before {
     .outer-spacer   { width: 7px; }
     .controls-row   { gap: 8px; margin-top: 14px; }
     .bet-btn        { width: 48px; height: 48px; font-size: 26px; }
-    .bet-display    { font-size: 20px; min-width: 64px; padding: 6px 8px; }
+    .bet-display    { font-size: 22px; min-width: 64px; padding: 6px 8px; }
     .start-button   { flex: 1; width: auto; height: 52px; font-size: 22px; }
-    .top-lights span,
-    .bottom-lights span { width: 11px; height: 11px; }
+    .top-lights span, .bottom-lights span { width: 11px; height: 11px; }
+    .win-overlay-amount { font-size: 38px; }
 }
 
-/* Зовсім маленькі (до 360px) — iPhone SE 1gen, старі Android */
 @media (max-width: 360px) {
     :root          { --item-height: 70px; }
     .machine-title { font-size: 18px; letter-spacing: 3px; }
     .icon img      { width: 46px; height: 46px; }
     .bet-btn       { width: 44px; height: 44px; }
     .start-button  { font-size: 19px; height: 48px; }
+    .win-overlay-amount { font-size: 30px; }
 }
 
-/* Великі телефони і планшети (481–768px) */
 @media (min-width: 481px) and (max-width: 768px) {
     #container { width: 95vw; max-width: 480px; }
 }
 
-/* Прибираємо hover на touch-пристроях */
 @media (hover: none) {
     .start-button:hover:not(:disabled)::after { left: -80%; }
     .bet-btn:hover { background: linear-gradient(160deg, #3a2000, #1a0e00); box-shadow: none; }
